@@ -11,13 +11,17 @@ import { Card, CardContent } from "@/components/ui/card"
 import { MapPin, Clock, Camera, ArrowLeft, Share2, MountainIcon as Hiking } from "lucide-react"
 import AttractionMapClient from "@/components/attraction-map-client"
 import GetDirectionsButton from "@/components/get-directions-button"
+import { BookingForm } from "@/components/booking/booking-form"
 
-type Props = {
-  params: { id: string }
+interface PageProps {
+  params: {
+    id: string
+  }
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const attraction = await getAttractionById(params.id)
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const id = await Promise.resolve(params.id)
+  const attraction = await getAttractionById(id)
   
   if (!attraction) {
     return {
@@ -31,8 +35,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function AttractionPage({ params }: Props) {
-  const attraction = await getAttractionById(params.id)
+export default async function AttractionPage({ params }: PageProps) {
+  const id = await Promise.resolve(params.id)
+  const attraction = await getAttractionById(id)
   
   if (!attraction) {
     notFound()
@@ -40,7 +45,7 @@ export default async function AttractionPage({ params }: Props) {
   
   // Get related attractions (excluding current one)
   const relatedAttractions = await getFeaturedAttractions(4)
-  const filteredRelatedAttractions = relatedAttractions.filter(item => item.id !== params.id).slice(0, 3)
+  const filteredRelatedAttractions = relatedAttractions.filter(item => item.id !== id).slice(0, 3)
 
   return (
     <div className="min-h-screen">
@@ -127,7 +132,7 @@ export default async function AttractionPage({ params }: Props) {
               {/* This column is empty now that the full description is moved up. Can be removed if no other content is needed here. */}
             </div>
             
-            <div className="bg-gray-50 p-6 rounded-lg">
+            <div className="bg-gray-50 p-6 rounded-lg mb-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Location</h3>
               <div className="h-64 rounded-lg overflow-hidden mb-4">
                 <AttractionMapClient 
@@ -147,6 +152,13 @@ export default async function AttractionPage({ params }: Props) {
                   isFullWidth={true}
                 />
               )}
+            </div>
+            {/* Booking Form */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Book This Attraction</h3>
+              <div className="mt-8">
+                <BookingForm attraction={attraction} />
+              </div>
             </div>
           </div>
         </div>

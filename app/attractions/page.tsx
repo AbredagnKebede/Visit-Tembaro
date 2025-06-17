@@ -1,54 +1,12 @@
-"use client"
-
-import { useState, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import Image from "next/image"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Clock, Camera, MountainIcon as Hiking } from "lucide-react"
 import { getAllAttractions } from "@/lib/services/attractions"
-import { Attraction } from "@/types/schema"
-import { Skeleton } from "@/components/ui/skeleton"
+import { AttractionsList } from "./attractions-list"
+import Image from "next/image"
+import { Button } from "@/components/ui/button"
 
-const categories = ["All", "Natural", "Cultural"]
-
-export default function AttractionsPage() {
-  const [attractions, setAttractions] = useState<Attraction[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedCategory, setSelectedCategory] = useState("All")
-
-  useEffect(() => {
-    async function loadAttractions() {
-      try {
-        const data = await getAllAttractions()
-        setAttractions(data)
-      } catch (err) {
-        console.error('Error loading attractions:', err)
-        setError('Failed to load attractions')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadAttractions()
-  }, [])
-
-  const filteredAttractions = selectedCategory === "All" 
-    ? attractions 
-    : attractions.filter(attraction => attraction.category === selectedCategory)
-
-  if (error) {
-    return (
-      <div className="min-h-screen">
-        <Navbar />
-        <div className="text-center py-10 text-red-500">{error}</div>
-        <Footer />
-      </div>
-    )
-  }
+export default async function AttractionsPage() {
+  const attractions = await getAllAttractions()
 
   return (
     <div className="min-h-screen">
@@ -66,105 +24,8 @@ export default function AttractionsPage() {
         </div>
       </section>
 
-      {/* Category Filter */}
-      <section className="py-8 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap justify-center gap-4">
-            {categories.map((category) => (
-              <Badge
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                className="cursor-pointer hover:bg-gray-100 px-6 py-2 text-sm"
-                onClick={() => setSelectedCategory(category)}
-              >
-                {category}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Attractions Grid */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-              {Array(6).fill(0).map((_, i) => (
-                <Card key={i} className="overflow-hidden">
-                  <Skeleton className="h-48 w-full" />
-                  <div className="p-6">
-                    <Skeleton className="h-6 w-3/4 mb-4" />
-                    <Skeleton className="h-4 w-24 mb-2" />
-                    <Skeleton className="h-4 w-full mb-2" />
-                    <Skeleton className="h-4 w-full mb-4" />
-                    <div className="flex gap-2">
-                      <Skeleton className="h-8 w-24" />
-                      <Skeleton className="h-8 w-24" />
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : filteredAttractions.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-              {filteredAttractions.map((attraction) => (
-                <Card key={attraction.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col md:flex-row relative w-full md:items-stretch min-h-[600px]">
-                  <div className="absolute top-4 left-4 z-10">
-                    <Badge className="bg-white/90 text-gray-900 hover:bg-white">
-                      {attraction.category}
-                    </Badge>
-                  </div>
-                  <div className="relative h-full md:w-1/2 flex-grow flex-shrink-0">
-                    <Image
-                      src={attraction.image_url || "/placeholder.svg"}
-                      alt={attraction.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <CardContent className="p-6 md:w-1/2 flex flex-col justify-between h-full flex-grow flex-shrink-0">
-                    <div className="flex-grow">
-                      <h3 className="text-xl font-bold text-gray-900 mb-4">{attraction.name}</h3>
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center text-sm text-gray-600">
-                          <Hiking className="h-4 w-4 mr-2" />
-                          {attraction.difficulty}
-                        </div>
-                        <div className="flex items-center text-sm text-gray-600">
-                          <Clock className="h-4 w-4 mr-2" />
-                          {attraction.duration}
-                        </div>
-                      </div>
-                      <p className="mb-2 text-sm text-gray-600"><span className="font-semibold">Best Time:</span> {attraction.best_time}</p>
-                      <p className="mb-4 text-sm text-gray-600"><span className="font-semibold">Accessibility:</span> {attraction.accessibility}</p>
-                      <p className="text-gray-600 mb-4 line-clamp-2">{attraction.description}</p>
-                      <div className="flex gap-2 overflow-x-auto pb-2 whitespace-nowrap min-w-0">
-                        {(attraction.highlights || []).map((highlight: string, index: number) => (
-                          <Badge key={index} variant="secondary">
-                            {highlight}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex gap-2 mt-4 flex-shrink-0">
-                      <Button variant="default" size="sm">
-                        Get Directions
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        View Gallery
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-10">
-              <p className="text-gray-600">No attractions found in this category.</p>
-            </div>
-          )}
-        </div>
-      </section>
+      {/* Attractions List */}
+      <AttractionsList initialAttractions={attractions} />
 
       {/* Call to Action */}
       <section className="py-16 bg-green-600 text-white">
