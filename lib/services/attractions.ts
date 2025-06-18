@@ -1,11 +1,12 @@
-import { supabase, handleSupabaseError } from '@/lib/supabase';
+import { supabase, createServerSupabaseClient, handleSupabaseError } from '@/lib/supabase';
 import { Attraction } from '@/types/schema';
 
 const TABLE = 'attractions';
 
-// Get all attractions
+// Get all attractions (server-side)
 export async function getAllAttractions(): Promise<Attraction[]> {
   try {
+    const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from(TABLE)
       .select('*')
@@ -19,9 +20,10 @@ export async function getAllAttractions(): Promise<Attraction[]> {
   }
 }
 
-// Get featured attractions
+// Get featured attractions (server-side)
 export async function getFeaturedAttractions(limitCount = 3): Promise<Attraction[]> {
   try {
+    const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from(TABLE)
       .select('*')
@@ -37,16 +39,26 @@ export async function getFeaturedAttractions(limitCount = 3): Promise<Attraction
   }
 }
 
-// Get attraction by ID
+// Get attraction by ID (server-side)
 export async function getAttractionById(id: string): Promise<Attraction | null> {
   try {
+    const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from(TABLE)
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    
+    // Log the attraction data for debugging
+    console.log('Attraction data:', {
+      id: data?.id,
+      name: data?.name,
+      price: data?.price,
+      hasPrice: data?.price !== undefined && data?.price !== null
+    });
+    
     return data as Attraction;
   } catch (error) {
     handleSupabaseError(error);
@@ -54,7 +66,7 @@ export async function getAttractionById(id: string): Promise<Attraction | null> 
   }
 }
 
-// Create attraction
+// Create attraction (client-side)
 export async function createAttraction(attraction: Omit<Attraction, 'id' | 'created_at' | 'updated_at'>, imageFile: File): Promise<string> {
   try {
     // Upload image to Supabase Storage
@@ -93,7 +105,7 @@ export async function createAttraction(attraction: Omit<Attraction, 'id' | 'crea
   }
 }
 
-// Update attraction
+// Update attraction (client-side)
 export async function updateAttraction(
   id: string,
   data: Partial<Omit<Attraction, 'id' | 'created_at' | 'updated_at'>>,
@@ -148,7 +160,7 @@ export async function updateAttraction(
   }
 }
 
-// Delete attraction
+// Delete attraction (client-side)
 export async function deleteAttraction(id: string): Promise<void> {
   try {
     // Get attraction to get image URL before deleting it

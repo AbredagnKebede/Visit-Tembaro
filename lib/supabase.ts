@@ -8,8 +8,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Please check your .env.local file.');
 }
 
-// Create Supabase client
+// Create Supabase client for client-side usage
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Create Supabase client for server-side usage
+export const createServerSupabaseClient = () => {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false
+    },
+    global: {
+      fetch: fetch
+    }
+  });
+};
 
 // Helper function to handle Supabase errors
 export function handleSupabaseError(error: any): never {
@@ -34,6 +46,8 @@ export function handleSupabaseError(error: any): never {
 // Function to set up RLS policies
 export async function setupRLSPolicies() {
   try {
+    const supabase = createServerSupabaseClient();
+
     // Enable RLS on cultural_items table
     await supabase.rpc('enable_rls', { table_name: 'cultural_items' });
 
