@@ -17,6 +17,7 @@ export interface Attraction {
   highlights: string[];
   best_time: string;
   featured: boolean;
+  price: number;
   created_at: string;
   updated_at: string;
 }
@@ -79,4 +80,29 @@ export interface Itinerary {
   highlights: string[];
   created_at: string;
   updated_at: string;
+}
+
+export interface User {
+  id: string
+  email: string
+  full_name?: string
+  avatar_url?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Booking {
+  id: string
+  user_id: string
+  attraction_id: string
+  booking_date: string
+  booking_time: string
+  number_of_people: number
+  total_price: number
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+  special_requests?: string
+  created_at: string
+  updated_at: string
+  attraction?: Attraction
+  user?: User
 }
