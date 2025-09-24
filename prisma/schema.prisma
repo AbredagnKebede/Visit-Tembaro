@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String?   @map("password_hash")
+  name          String?   @map("full_name")
+  image         String?   @map("avatar_url")
+  emailVerified DateTime? @map("email_verified")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  role          String?   @default("user")
+  accounts      Account[]
+  sessions      Session[]
+  bookings      Booking[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+model Attraction {
+  id              String   @id @default(uuid())
+  name            String
+  description     String   @db.Text
+  shortDescription String  @map("short_description")
+  imageUrl        String?  @map("image_url")
+  location        Json
+  category        String
+  difficulty      String
+  duration        String
+  accessibility   String
+  highlights      String[]
+  bestTime        String   @map("best_time")
+  featured        Boolean  @default(false)
+  price           Decimal  @db.Decimal(10, 2)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  bookings        Booking[]
+}
+
+model NewsArticle {
+  id          String   @id @default(uuid())
+  title       String
+  content     String   @db.Text
+  excerpt     String   @db.Text
+  imageUrl    String?  @map("image_url")
+  category    String
+  author      String
+  publishDate DateTime @map("publish_date")
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+}
+
+model GalleryItem {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  imageUrl    String   @map("image_url")
+  category    String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+}
+
+model CulturalItem {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  imageUrl    String?  @map("image_url")
+  category    String
+  isFeatured  Boolean  @default(false) @map("is_featured")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+}
+
+model Itinerary {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  duration    String
+  difficulty  String
+  highlights  String[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+}
+
+model Booking {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  attractionId    String   @map("attraction_id")
+  bookingDate     DateTime @map("booking_date") @db.Date
+  bookingTime     String   @map("booking_time")
+  numberOfPeople Int      @map("number_of_people")
+  totalPrice      Decimal  @map("total_price") @db.Decimal(10, 2)
+  status         String
+  specialRequests String?  @map("special_requests") @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attraction      Attraction @relation(fields: [attractionId], references: [id], onDelete: Cascade)
+}
