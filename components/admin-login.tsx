@@ -78,15 +78,15 @@ export function AdminLogin() {
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <strong>Demo Credentials:</strong>
-              <br />
-              Email: admin@tembaro.gov.et
-              <br />
-              Password: admin123
-            </p>
-          </div>
+          {process.env.NODE_ENV === "development" && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Dev credentials (from seed):</strong>
+                <br />
+                Email: admin@visit-tembaro.local / Password: Admin123!
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
