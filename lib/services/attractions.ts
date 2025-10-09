@@ -1,194 +1,61 @@
-import { supabase, createServerSupabaseClient, handleSupabaseError } from '@/lib/supabase';
-import { Attraction } from '@/types/schema';
+import { prisma } from '@/lib/db/prisma'
+import type { Attraction } from '@/types/schema'
 
-const TABLE = 'attractions';
+function toAttraction(a: {
+  id: string
+  name: string
+  description: string
+  shortDescription: string
+  imageUrl: string | null
+  location: unknown
+  category: string
+  difficulty: string
+  duration: string
+  accessibility: string
+  highlights: string[]
+  bestTime: string
+  featured: boolean
+  price: unknown
+  createdAt: Date
+  updatedAt: Date
+}): Attraction {
+  return {
+    id: a.id,
+    name: a.name,
+    description: a.description,
+    short_description: a.shortDescription,
+    image_url: a.imageUrl ?? '',
+    location: a.location as Attraction['location'],
+    category: a.category,
+    difficulty: a.difficulty,
+    duration: a.duration,
+    accessibility: a.accessibility,
+    highlights: a.highlights,
+    best_time: a.bestTime,
+    featured: a.featured,
+    price: Number(a.price),
+    created_at: a.createdAt.toISOString(),
+    updated_at: a.updatedAt.toISOString(),
+  }
+}
 
-// Get all attractions (server-side)
 export async function getAllAttractions(): Promise<Attraction[]> {
-  try {
-    const supabase = createServerSupabaseClient();
-    const { data, error } = await supabase
-      .from(TABLE)
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data as Attraction[];
-  } catch (error) {
-    handleSupabaseError(error);
-    return [];
-  }
+  const list = await prisma.attraction.findMany({
+    orderBy: { createdAt: 'desc' },
+  })
+  return list.map(toAttraction)
 }
 
-// Get featured attractions (server-side)
 export async function getFeaturedAttractions(limitCount = 3): Promise<Attraction[]> {
-  try {
-    const supabase = createServerSupabaseClient();
-    const { data, error } = await supabase
-      .from(TABLE)
-      .select('*')
-      .eq('featured', true)
-      .order('created_at', { ascending: false })
-      .limit(limitCount);
-
-    if (error) throw error;
-    return data as Attraction[];
-  } catch (error) {
-    handleSupabaseError(error);
-    return [];
-  }
+  const list = await prisma.attraction.findMany({
+    where: { featured: true },
+    orderBy: { createdAt: 'desc' },
+    take: limitCount,
+  })
+  return list.map(toAttraction)
 }
 
-// Get attraction by ID (server-side)
 export async function getAttractionById(id: string): Promise<Attraction | null> {
-  try {
-    const supabase = createServerSupabaseClient();
-    const { data, error } = await supabase
-      .from(TABLE)
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) throw error;
-    
-    // Log the attraction data for debugging
-    console.log('Attraction data:', {
-      id: data?.id,
-      name: data?.name,
-      price: data?.price,
-      hasPrice: data?.price !== undefined && data?.price !== null
-    });
-    
-    return data as Attraction;
-  } catch (error) {
-    handleSupabaseError(error);
-    return null;
-  }
-}
-
-// Create attraction (client-side)
-export async function createAttraction(attraction: Omit<Attraction, 'id' | 'created_at' | 'updated_at'>, imageFile: File): Promise<string> {
-  try {
-    // Upload image to Supabase Storage
-    const fileExt = imageFile.name.split('.').pop();
-    const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `attractions/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('attractions')
-      .upload(filePath, imageFile);
-
-    if (uploadError) throw uploadError;
-
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('attractions')
-      .getPublicUrl(filePath);
-
-    // Create attraction record
-    const { data, error } = await supabase
-      .from(TABLE)
-      .insert({
-        ...attraction,
-        image_url: publicUrl,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data.id;
-  } catch (error) {
-    handleSupabaseError(error);
-    throw error;
-  }
-}
-
-// Update attraction (client-side)
-export async function updateAttraction(
-  id: string,
-  data: Partial<Omit<Attraction, 'id' | 'created_at' | 'updated_at'>>,
-  imageFile?: File
-): Promise<void> {
-  try {
-    let image_url = data.image_url;
-
-    if (imageFile) {
-      // Upload new image
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `attractions/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('attractions')
-        .upload(filePath, imageFile);
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('attractions')
-        .getPublicUrl(filePath);
-
-      image_url = publicUrl;
-
-      // Delete old image if it exists
-      if (data.image_url) {
-        const oldPath = data.image_url.split('/').pop();
-        if (oldPath) {
-          await supabase.storage
-            .from('attractions')
-            .remove([oldPath]);
-        }
-      }
-    }
-
-    const { error } = await supabase
-      .from(TABLE)
-      .update({
-        ...data,
-        image_url,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id);
-
-    if (error) throw error;
-  } catch (error) {
-    handleSupabaseError(error);
-    throw error;
-  }
-}
-
-// Delete attraction (client-side)
-export async function deleteAttraction(id: string): Promise<void> {
-  try {
-    // Get attraction to get image URL before deleting it
-    const { data: attraction } = await supabase
-      .from(TABLE)
-      .select('image_url') // Only select image_url, as it's the only field needed
-      .eq('id', id)
-      .maybeSingle(); // Use maybeSingle to handle cases where no row is returned
-
-    // Delete image from storage if the attraction and its image_url exist
-    if (attraction?.image_url) {
-      const imagePath = attraction.image_url.split('/').pop();
-      if (imagePath) {
-        await supabase.storage
-          .from('attractions')
-          .remove([imagePath]);
-      }
-    }
-
-    // Delete from database regardless of whether image was found/deleted
-    const { error } = await supabase
-      .from(TABLE)
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  } catch (error) {
-    handleSupabaseError(error);
-    throw error;
-  }
+  const a = await prisma.attraction.findUnique({ where: { id } })
+  return a ? toAttraction(a) : null
 }
