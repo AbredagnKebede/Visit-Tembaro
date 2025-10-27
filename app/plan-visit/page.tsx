@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+export const dynamic = 'force-dynamic'
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -118,7 +119,7 @@ export default function PlanVisitPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">
-                  Early morning and late afternoon offer the best lighting for capturing Tembaro's landscapes.
+                  Early morning and late afternoon offer the best lighting for capturing Tembaro&apos;s landscapes.
                 </p>
                 <Badge variant="outline">Golden Hours</Badge>
               </CardContent>

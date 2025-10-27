@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { getNewsArticleById, getLatestNewsArticles } from "@/lib/services/news"
@@ -11,12 +12,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Calendar, User, ArrowLeft, Share2, Bookmark } from "lucide-react"
 
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
+  const { id } = await params
   const article = await getNewsArticleById(id)
   
   if (!article) {
@@ -32,8 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function NewsArticlePage({ params }: Props) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
+  const { id } = await params
   const article = await getNewsArticleById(id)
   
   if (!article) {

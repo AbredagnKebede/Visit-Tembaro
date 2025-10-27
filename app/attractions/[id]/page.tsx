@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { getAttractionById, getFeaturedAttractions } from "@/lib/services/attractions"
@@ -8,19 +9,18 @@ import { notFound } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { MapPin, Clock, Camera, ArrowLeft, Share2, MountainIcon as Hiking } from "lucide-react"
+import { MapPin, Clock, Camera, ArrowLeft, MountainIcon as Hiking } from "lucide-react"
 import AttractionMapClient from "@/components/attraction-map-client"
 import GetDirectionsButton from "@/components/get-directions-button"
+import { ShareButton } from "@/components/share-button"
 import { BookingForm } from "@/components/booking/booking-form"
 
 interface PageProps {
-  params: {
-    id: string
-  }
+  params: Promise<{ id: string }>
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const id = await Promise.resolve(params.id)
+  const { id } = await params
   const attraction = await getAttractionById(id)
   
   if (!attraction) {
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function AttractionPage({ params }: PageProps) {
-  const id = await Promise.resolve(params.id)
+  const { id } = await params
   const attraction = await getAttractionById(id)
   
   if (!attraction) {
@@ -115,14 +115,13 @@ export default async function AttractionPage({ params }: PageProps) {
                     longitude={attraction.location.longitude}
                   />
                 )}
-                <Button variant="outline" className="flex items-center">
-                  <Camera className="h-4 w-4 mr-2" />
-                  View Gallery
-                </Button>
-                <Button variant="ghost" className="flex items-center">
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share
-                </Button>
+                <Link href="/gallery">
+                  <Button variant="outline" className="flex items-center">
+                    <Camera className="h-4 w-4 mr-2" />
+                    View Gallery
+                  </Button>
+                </Link>
+                <ShareButton title={attraction.name} url={`/attractions/${attraction.id}`} />
               </div>
             </div>
           </div>

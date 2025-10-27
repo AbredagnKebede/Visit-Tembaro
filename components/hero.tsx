@@ -23,7 +23,7 @@ export function Hero() {
           Discover the Hidden Wonders of <span className="text-green-400">Tembaro</span>
         </h1>
         <p className="text-xl md:text-2xl mb-8 text-gray-200 max-w-2xl mx-auto">
-          Experience the breathtaking landscapes, rich cultural heritage, and warm hospitality of Southern Ethiopia's
+          Experience the breathtaking landscapes, rich cultural heritage, and warm hospitality of Southern Ethiopia&apos;s
           best-kept secret.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

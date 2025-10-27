@@ -6,19 +6,29 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getFeaturedAttractions } from '@/lib/services/attractions';
-import { Attraction } from '@/types/schema';
+import type { Attraction } from '@/types/schema';
 
-export function FeaturedAttractions() {
-  const [attractions, setAttractions] = useState<Attraction[]>([]);
-  const [loading, setLoading] = useState(true);
+interface FeaturedAttractionsProps {
+  initialAttractions?: Attraction[];
+}
+
+export function FeaturedAttractions({ initialAttractions }: FeaturedAttractionsProps) {
+  const [attractions, setAttractions] = useState<Attraction[]>(initialAttractions ?? []);
+  const [loading, setLoading] = useState(!initialAttractions?.length);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (initialAttractions?.length) {
+      setAttractions(initialAttractions);
+      setLoading(false);
+      return;
+    }
     async function loadAttractions() {
       try {
-        const data = await getFeaturedAttractions(3);
-        setAttractions(data);
+        const res = await fetch('/api/attractions');
+        if (!res.ok) throw new Error('Failed to fetch');
+        const data = await res.json();
+        setAttractions((data as Attraction[]).filter((a) => a.featured).slice(0, 3));
       } catch (err) {
         console.error('Error loading attractions:', err);
         setError('Failed to load attractions');
@@ -28,7 +38,7 @@ export function FeaturedAttractions() {
     }
 
     loadAttractions();
-  }, []);
+  }, [initialAttractions]);
 
   if (error) {
     return <div className="text-center py-10 text-red-500">{error}</div>;
@@ -41,7 +51,7 @@ export function FeaturedAttractions() {
           <div className="space-y-2">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Featured Attractions</h2>
             <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              Discover the most popular destinations in Tembaro that you shouldn't miss during your visit.
+              Discover the most popular destinations in Tembaro that you shouldn&apos;t miss during your visit.
             </p>
           </div>
         </div>
@@ -68,7 +78,7 @@ export function FeaturedAttractions() {
               <Card key={attraction.id} className="overflow-hidden">
                 <div className="relative h-[200px] w-full">
                   <Image 
-                    src={attraction.image_url || '/placeholder.jpg'} 
+                    src={attraction.image_url || '/placeholder.svg'} 
                     alt={attraction.name}
                     fill
                     className="object-cover"

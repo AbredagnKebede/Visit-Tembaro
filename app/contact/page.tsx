@@ -13,7 +13,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import { toast } from 'sonner';
-import { saveContactMessage } from '@/lib/services/contact';
 
 // Form validation schema
 const formSchema = z.object({
@@ -41,12 +40,20 @@ export default function ContactPage() {
   async function onSubmit(data: FormValues) {
     setIsSubmitting(true);
     try {
-      await saveContactMessage(data);
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error((e as { error?: string }).error || 'Failed to send');
+      }
       toast.success('Your message has been sent successfully!');
       form.reset();
     } catch (error) {
       console.error('Error submitting form:', error);
-      toast.error('Failed to send message. Please try again later.');
+      toast.error(error instanceof Error ? error.message : 'Failed to send message. Please try again later.');
     } finally {
       setIsSubmitting(false);
     }
@@ -73,7 +80,7 @@ export default function ContactPage() {
               <CardHeader>
                 <CardTitle>Send us a Message</CardTitle>
                 <CardDescription>
-                  We'd love to hear from you. Fill out the form below and we'll get back to you as soon as possible.
+                  We&apos;d love to hear from you. Fill out the form below and we&apos;ll get back to you as soon as possible.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -142,7 +149,7 @@ export default function ContactPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Get in Touch</CardTitle>
-                  <CardDescription>Here's how you can reach us for any questions or assistance</CardDescription>
+                  <CardDescription>Here&apos;s how you can reach us for any questions or assistance</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-start space-x-4">
@@ -152,7 +159,7 @@ export default function ContactPage() {
                       <p className="text-gray-600">
                         Tembaro Special Wereda
                         <br />
-                        Centeral Ethiopia Region
+                        Central Ethiopia Region
                         <br />
                         Ethiopia
                       </p>

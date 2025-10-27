@@ -29,7 +29,7 @@ export default function AboutPage() {
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
               <div className="prose prose-lg text-gray-600">
                 <p className="mb-4">
-                  Tembaro Special Wereda is a hidden gem nestled in the Centeral Ethiopia Region of Ethiopia. Known for its stunning landscapes, rich cultural heritage, and warm
+                  Tembaro Special Wereda is a hidden gem nestled in the Central Ethiopia Region of Ethiopia. Known for its stunning landscapes, rich cultural heritage, and warm
                   hospitality, Tembaro offers visitors an authentic Ethiopian experience away from the crowds.
                 </p>
                 <p className="mb-4">
@@ -92,7 +92,7 @@ export default function AboutPage() {
               <div className="prose prose-lg text-gray-600">
                 <p className="mb-4">
                   Tembaro is characterized by its diverse topography, ranging from highland plateaus to deep valleys.
-                  The region's elevation varies from 1,500 to 2,800 meters above sea level, creating distinct
+                  The region&apos;s elevation varies from 1,500 to 2,800 meters above sea level, creating distinct
                   microclimates and ecosystems.
                 </p>
                 <p className="mb-4">

@@ -1,8 +1,10 @@
+export const dynamic = 'force-dynamic'
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { getAllAttractions } from "@/lib/services/attractions"
 import { AttractionsList } from "./attractions-list"
 import Image from "next/image"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 export default async function AttractionsPage() {
@@ -35,12 +37,16 @@ export default async function AttractionsPage() {
             Ready to explore these amazing attractions? Contact us to plan your perfect itinerary.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary">
-              Plan Your Visit
-            </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-green-600">
-              Contact Guide
-            </Button>
+            <Link href="/plan-visit">
+              <Button size="lg" variant="secondary">
+                Plan Your Visit
+              </Button>
+            </Link>
+            <Link href="/contact">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-green-600">
+                Contact Guide
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

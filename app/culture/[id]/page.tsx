@@ -1,6 +1,7 @@
+export const dynamic = 'force-dynamic'
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { getCulturalItemById, getFeaturedCulturalItems } from "@/lib/services/culture"
+import { getCulturalItemById, getFeaturedCulturalItems } from "@/lib/services/cultural"
 import { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
@@ -8,14 +9,16 @@ import { notFound } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowLeft, Share2, Calendar } from "lucide-react"
+import { ShareButton } from "@/components/share-button"
+import { ArrowLeft, Calendar } from "lucide-react"
 
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const culturalItem = await getCulturalItemById(params.id)
+  const { id } = await params
+  const culturalItem = await getCulturalItemById(id)
   
   if (!culturalItem) {
     return {
@@ -30,7 +33,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CulturalItemPage({ params }: Props) {
-  const culturalItem = await getCulturalItemById(params.id)
+  const { id } = await params
+  const culturalItem = await getCulturalItemById(id)
   
   if (!culturalItem) {
     notFound()
@@ -38,7 +42,7 @@ export default async function CulturalItemPage({ params }: Props) {
   
   // Get related cultural items (excluding current one)
   const relatedItems = await getFeaturedCulturalItems(4)
-  const filteredRelatedItems = relatedItems.filter(item => item.id !== params.id).slice(0, 3)
+  const filteredRelatedItems = relatedItems.filter(item => item.id !== id).slice(0, 3)
 
   return (
     <div className="min-h-screen">
@@ -59,7 +63,7 @@ export default async function CulturalItemPage({ params }: Props) {
           
           <div className="relative h-96 w-full mb-8 rounded-lg overflow-hidden">
             <Image 
-              src={culturalItem.imageUrl || "/placeholder.svg"} 
+              src={culturalItem.image_url || "/placeholder.svg"} 
               alt={culturalItem.title} 
               fill 
               className="object-cover" 
@@ -75,14 +79,13 @@ export default async function CulturalItemPage({ params }: Props) {
           <div className="flex justify-between items-center border-t border-b border-gray-200 py-4 my-8">
             <div className="text-sm text-gray-500">Share this cultural item</div>
             <div className="flex space-x-2">
-              <Button size="sm" variant="ghost">
-                <Share2 className="h-4 w-4 mr-1" />
-                Share
-              </Button>
-              <Button size="sm" variant="outline">
-                <Calendar className="h-4 w-4 mr-1" />
-                Plan Visit
-              </Button>
+              <ShareButton title={culturalItem.title} url={`/culture/${culturalItem.id}`} />
+              <Link href="/plan-visit">
+                <Button size="sm" variant="outline">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  Plan Visit
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -99,7 +102,7 @@ export default async function CulturalItemPage({ params }: Props) {
                 <Card key={relatedItem.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="relative h-48">
                     <Image 
-                      src={relatedItem.imageUrl || "/placeholder.svg"} 
+                      src={relatedItem.image_url || "/placeholder.svg"} 
                       alt={relatedItem.title} 
                       fill 
                       className="object-cover" 

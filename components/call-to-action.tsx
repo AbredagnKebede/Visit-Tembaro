@@ -7,7 +7,7 @@ export function CallToAction() {
       <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
         <h2 className="text-4xl font-bold text-white mb-4">Ready to Explore Tembaro?</h2>
         <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
-          Start planning your unforgettable journey to one of Ethiopia's most beautiful and culturally rich
+          Start planning your unforgettable journey to one of Ethiopia&apos;s most beautiful and culturally rich
           destinations.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
