@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { createNewsArticle, updateNewsArticle } from "@/lib/services/news";
+import { createNewsArticle, updateNewsArticle } from "@/lib/admin-api";
 import { NewsArticle } from "@/types/schema";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 interface NewsFormProps {
   article?: NewsArticle;
@@ -53,7 +53,7 @@ export function NewsForm({ article, onSuccess, onCancel }: NewsFormProps) {
           ...formData,
           image_url: article.image_url
         }, selectedImage || undefined);
-        toast({ title: "Success", description: "News article updated successfully" });
+        toast.success("News article updated successfully");
       } else {
         // Create new article
         if (!selectedImage) {
@@ -63,16 +63,12 @@ export function NewsForm({ article, onSuccess, onCancel }: NewsFormProps) {
           ...formData,
           image_url: "" // This will be set after upload
         }, selectedImage);
-        toast({ title: "Success", description: "News article created successfully" });
+        toast.success("News article created successfully");
       }
       onSuccess();
     } catch (error) {
       console.error("Error saving news article:", error);
-      toast({ 
-        title: "Error", 
-        description: error instanceof Error ? error.message : "Failed to save news article", 
-        variant: "destructive" 
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to save news article");
     } finally {
       setIsSubmitting(false);
     }

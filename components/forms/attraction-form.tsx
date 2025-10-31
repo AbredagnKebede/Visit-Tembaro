@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { createAttraction, updateAttraction } from "@/lib/services/attractions";
+import { createAttraction, updateAttraction } from "@/lib/admin-api";
 import { Attraction } from "@/types/schema";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 interface AttractionFormProps {
   attraction?: Attraction | null;
@@ -80,7 +80,7 @@ export function AttractionForm({ attraction, onSuccess, onCancel }: AttractionFo
           ...dataToSubmit,
           image_url: attraction.image_url
         }, selectedImage || undefined);
-        toast({ title: "Success", description: "Attraction updated successfully" });
+        toast.success("Attraction updated successfully");
       } else {
         if (!selectedImage) {
           throw new Error("Please select an image");
@@ -89,16 +89,12 @@ export function AttractionForm({ attraction, onSuccess, onCancel }: AttractionFo
           ...dataToSubmit,
           image_url: ""
         }, selectedImage);
-        toast({ title: "Success", description: "Attraction created successfully" });
+        toast.success("Attraction created successfully");
       }
       onSuccess();
     } catch (error) {
       console.error("Error saving attraction:", error);
-      toast({ 
-        title: "Error", 
-        description: error instanceof Error ? error.message : "Failed to save attraction", 
-        variant: "destructive" 
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to save attraction");
     } finally {
       setIsSubmitting(false);
     }

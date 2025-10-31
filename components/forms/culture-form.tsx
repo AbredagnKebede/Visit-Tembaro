@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Checkbox } from "@/components/ui/checkbox";
-import { createCulturalItem, updateCulturalItem } from "@/lib/services/cultural";
+import { createCulturalItem, updateCulturalItem } from "@/lib/admin-api";
 import { CulturalItem } from "@/types/schema";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 interface CultureFormProps {
   item?: CulturalItem;
@@ -44,10 +44,7 @@ export function CultureForm({ item, onSuccess, onCancel }: CultureFormProps) {
           },
           selectedImage || undefined
         );
-        toast({
-          title: "Success",
-          description: "Cultural item updated successfully",
-        });
+        toast.success("Cultural item updated successfully");
       } else {
         if (!selectedImage) {
           throw new Error("Please select an image");
@@ -62,19 +59,12 @@ export function CultureForm({ item, onSuccess, onCancel }: CultureFormProps) {
           },
           selectedImage
         );
-        toast({
-          title: "Success",
-          description: "Cultural item created successfully",
-        });
+        toast.success("Cultural item created successfully");
       }
       onSuccess();
     } catch (error) {
       console.error("Error saving cultural item:", error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save cultural item",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to save cultural item");
     } finally {
       setLoading(false);
     }

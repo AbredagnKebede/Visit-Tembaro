@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/components/auth-provider"
-import { User } from "@supabase/supabase-js"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -14,29 +13,30 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { Mountain, LogOut, Upload, FileText, ImageIcon, MapPin, Users, Calendar, Mail, Trash2, Eye, Check, Plus, X, AlertCircle } from "lucide-react"
 import { NewsForm } from "@/components/forms/news-form"
 import { AttractionForm } from "@/components/forms/attraction-form"
 import { GalleryForm } from "@/components/forms/gallery-form"
 import { CultureForm } from "@/components/forms/culture-form"
 
-// Import Firebase services
-import { getAllContactMessages, markMessageAsRead, deleteContactMessage } from "@/lib/services/contact"
-import { getAllNewsArticles, createNewsArticle, updateNewsArticle, deleteNewsArticle } from "@/lib/services/news"
-import { getAllAttractions, createAttraction, updateAttraction, deleteAttraction } from "@/lib/services/attractions"
-import { getAllGalleryItems, createGalleryItem, deleteGalleryItem } from "@/lib/services/gallery"
-import { getAllCulturalItems, createCulturalItem, updateCulturalItem, deleteCulturalItem } from "@/lib/services/cultural"
+import {
+  fetchContactMessages,
+  markMessageAsRead,
+  deleteContactMessage,
+  fetchNews,
+  fetchAttractions,
+  fetchGallery,
+  fetchCultural,
+  deleteNewsArticle,
+  deleteAttraction,
+  deleteGalleryItem,
+  deleteCulturalItem,
+} from "@/lib/admin-api"
 
 // Import types
 import { ContactMessage, NewsArticle, Attraction, GalleryItem, CulturalItem } from "@/types/schema"
 
-// Update the AuthContextType interface
-interface AuthContextType {
-  user: User | null
-  signIn: (email: string, password: string) => Promise<void>
-  signOut: () => Promise<void>
-}
 
 export function AdminDashboard() {
   const { user, signOut } = useAuth()
@@ -100,8 +100,8 @@ export function AdminDashboard() {
     setLoadingMessages(true)
     setMessagesError(null)
     try {
-      const data = await getAllContactMessages()
-      setMessages(data)
+      const data = await fetchContactMessages()
+      setMessages((data ?? []) as ContactMessage[])
     } catch (error) {
       console.error("Error fetching messages:", error)
       setMessagesError("Failed to load messages. Please try again.")
@@ -115,8 +115,8 @@ export function AdminDashboard() {
     setLoadingNews(true)
     setNewsError(null)
     try {
-      const data = await getAllNewsArticles()
-      setNewsArticles(data)
+      const data = await fetchNews()
+      setNewsArticles(((data ?? []) as unknown) as NewsArticle[])
     } catch (error) {
       console.error("Error fetching news:", error)
       setNewsError("Failed to load news articles. Please try again.")
@@ -130,8 +130,8 @@ export function AdminDashboard() {
     setLoadingAttractions(true)
     setAttractionsError(null)
     try {
-      const data = await getAllAttractions()
-      setAttractions(data)
+      const data = await fetchAttractions()
+      setAttractions((data ?? []) as Attraction[])
     } catch (error) {
       console.error("Error fetching attractions:", error)
       setAttractionsError("Failed to load attractions. Please try again.")
@@ -145,8 +145,8 @@ export function AdminDashboard() {
     setLoadingGallery(true)
     setGalleryError(null)
     try {
-      const data = await getAllGalleryItems()
-      setGalleryItems(data)
+      const data = await fetchGallery()
+      setGalleryItems((data ?? []) as GalleryItem[])
     } catch (error) {
       console.error("Error fetching gallery items:", error)
       setGalleryError("Failed to load gallery items. Please try again.")
@@ -160,8 +160,8 @@ export function AdminDashboard() {
     setLoadingCulture(true)
     setCultureError(null)
     try {
-      const data = await getAllCulturalItems()
-      setCulturalItems(data)
+      const data = await fetchCultural()
+      setCulturalItems((data ?? []) as CulturalItem[])
     } catch (error) {
       console.error("Error fetching cultural items:", error)
       setCultureError("Failed to load cultural items. Please try again.")
@@ -185,11 +185,7 @@ export function AdminDashboard() {
         ))
       } catch (error) {
         console.error("Error marking message as read:", error)
-        toast({
-          title: "Error",
-          description: "Failed to mark message as read",
-          variant: "destructive"
-        })
+        toast.error("Failed to mark message as read")
       }
     }
   }
@@ -209,36 +205,32 @@ export function AdminDashboard() {
         case 'message':
           await deleteContactMessage(itemToDelete.id)
           setMessages(messages.filter(m => m.id !== itemToDelete.id))
-          toast({ title: "Success", description: "Message deleted successfully" })
+          toast.success("Message deleted successfully")
           break
         case 'news':
           await deleteNewsArticle(itemToDelete.id)
           setNewsArticles(newsArticles.filter(n => n.id !== itemToDelete.id))
-          toast({ title: "Success", description: "News article deleted successfully" })
+          toast.success("News article deleted successfully")
           break
         case 'attraction':
           await deleteAttraction(itemToDelete.id)
           setAttractions(attractions.filter(a => a.id !== itemToDelete.id))
-          toast({ title: "Success", description: "Attraction deleted successfully" })
+          toast.success("Attraction deleted successfully")
           break
         case 'gallery':
           await deleteGalleryItem(itemToDelete.id)
           setGalleryItems(galleryItems.filter(g => g.id !== itemToDelete.id))
-          toast({ title: "Success", description: "Gallery item deleted successfully" })
+          toast.success("Gallery item deleted successfully")
           break
         case 'culture':
           await deleteCulturalItem(itemToDelete.id)
           setCulturalItems(culturalItems.filter(c => c.id !== itemToDelete.id))
-          toast({ title: "Success", description: "Cultural item deleted successfully" })
+          toast.success("Cultural item deleted successfully")
           break
       }
     } catch (error) {
       console.error("Error deleting item:", error)
-      toast({
-        title: "Error",
-        description: "Failed to delete item",
-        variant: "destructive"
-      })
+      toast.error("Failed to delete item")
     } finally {
       setDeleteDialogOpen(false)
       setItemToDelete(null)

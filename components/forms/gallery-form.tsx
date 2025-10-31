@@ -5,9 +5,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { createGalleryItem, updateGalleryItem } from "@/lib/services/gallery";
+import { createGalleryItem, updateGalleryItem } from "@/lib/admin-api";
 import { GalleryItem } from "@/types/schema";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 interface GalleryFormProps {
   item?: GalleryItem;
@@ -41,10 +41,7 @@ export function GalleryForm({ item, onSuccess, onCancel }: GalleryFormProps) {
           },
           selectedImage || undefined
         );
-        toast({
-          title: "Success",
-          description: "Gallery item updated successfully",
-        });
+        toast.success("Gallery item updated successfully");
       } else {
         if (!selectedImage) {
           throw new Error("Please select an image");
@@ -58,19 +55,12 @@ export function GalleryForm({ item, onSuccess, onCancel }: GalleryFormProps) {
           },
           selectedImage
         );
-        toast({
-          title: "Success",
-          description: "Gallery item created successfully",
-        });
+        toast.success("Gallery item created successfully");
       }
       onSuccess();
     } catch (error) {
       console.error("Error saving gallery item:", error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save gallery item",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to save gallery item");
     } finally {
       setLoading(false);
     }
