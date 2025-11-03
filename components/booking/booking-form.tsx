@@ -33,7 +33,6 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
-import { createBooking } from "@/lib/services/bookings"
 import { Attraction } from "@/types/schema"
 import { useAuth } from "@/components/auth-provider"
 
@@ -83,18 +82,22 @@ export function BookingForm({ attraction }: BookingFormProps) {
         throw new Error("This attraction is not available for booking at the moment. Please try again later.")
       }
 
-      const bookingData = {
-        user_id: user.id,
-        attraction_id: attraction.id,
-        booking_date: format(values.booking_date, "yyyy-MM-dd"),
-        booking_time: values.booking_time,
-        number_of_people: parseInt(values.number_of_people),
-        total_price: Number((attraction.price * parseInt(values.number_of_people)).toFixed(2)),
-        special_requests: values.special_requests || undefined,
-        updated_at: new Date().toISOString()
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          attraction_id: attraction.id,
+          booking_date: format(values.booking_date, "yyyy-MM-dd"),
+          booking_time: values.booking_time,
+          number_of_people: parseInt(values.number_of_people),
+          special_requests: values.special_requests || undefined,
+        }),
+      })
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}))
+        throw new Error((e as { error?: string }).error || "Failed to create booking")
       }
-
-      await createBooking(bookingData)
       toast.success("Booking created successfully!")
       router.push("/bookings")
       router.refresh()
@@ -104,10 +107,6 @@ export function BookingForm({ attraction }: BookingFormProps) {
       
       if (error instanceof Error) {
         errorMessage = error.message
-      } else if (typeof error === 'object' && error !== null) {
-        // Handle Supabase error object
-        const supabaseError = error as { message?: string; details?: string; hint?: string }
-        errorMessage = supabaseError.message || supabaseError.details || supabaseError.hint || errorMessage
       }
       
       toast.error(errorMessage)
