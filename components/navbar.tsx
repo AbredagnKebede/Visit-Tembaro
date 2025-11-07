@@ -2,11 +2,13 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
 import { Menu, X, Mountain } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const { data: session } = useSession()
 
   const navItems = [
     { href: "/", label: "Home" },
@@ -41,6 +43,14 @@ export function Navbar() {
                 {item.label}
               </Link>
             ))}
+            {session?.user && (
+              <Link
+                href="/bookings"
+                className="text-gray-700 hover:text-green-600 px-3 py-2 text-sm font-medium transition-colors"
+              >
+                My Bookings
+              </Link>
+            )}
             <Link href="/admin">
               <Button variant="outline" size="sm">
                 Admin
@@ -70,6 +80,15 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
+              {session?.user && (
+                <Link
+                  href="/bookings"
+                  className="text-gray-700 hover:text-green-600 block px-3 py-2 text-base font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  My Bookings
+                </Link>
+              )}
               <Link href="/admin" onClick={() => setIsOpen(false)}>
                 <Button variant="outline" size="sm" className="ml-3 mt-2">
                   Admin

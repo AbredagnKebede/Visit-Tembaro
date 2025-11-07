@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/components/auth-provider"
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/sonner"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -17,8 +17,7 @@ export const metadata: Metadata = {
     description: "Explore the natural attractions and cultural heritage of Tembaro Special Wereda",
     images: ["/hero-image.jpg"],
   },
-  metadataBase: new URL("http://localhost:3000"),
-  generator: 'v0.dev'
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
 }
 
 export default function RootLayout({
