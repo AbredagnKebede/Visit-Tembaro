@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.env*
+*.md
+!README.md
+npm-debug.log*
+.DS_Store
+public/landscape_files
